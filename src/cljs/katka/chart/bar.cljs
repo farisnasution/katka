@@ -88,12 +88,13 @@
                          :content <string>}
            :rbd <num>}
   :data <vector of map>}"
-  [{:keys [svg rects x-axis y-axis data]} owner]
+  [{:keys [svg rects x-axis y-axis retriever-ks data]} owner]
   (reify
     om/IRender
     (render [_]
       (html (let [{:keys [width height]} svg
                   {:keys [padding fill]} rects
+                  {:keys [ord-ks num-ks]} retriever-ks
                   margin {:left  40
                           :right 40
                           :top 30
@@ -104,7 +105,7 @@
                               :height (- height
                                          (:top margin)
                                          (:bottom margin))}
-                  new-data (data/format-data data [:name] [:age])]
+                  new-data (data/format-data data ord-ks num-ks)]
               [:svg svg
                (om/build vertical-rects
                          {:g {:pos-x (:left margin)
