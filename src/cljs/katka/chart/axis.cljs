@@ -68,7 +68,7 @@
                                                    :text-anchor :show-text?])
                    l (select-keys (:line each {}) [:x1 :y1 :x2 :y2 :stroke])
                    {:keys [width padding]} scale
-                   ord-data (->> data (map first) vec)
+                   ord-data (map first data)
                    width-fn (scale/simple-ordinal-scale ord-data width padding)]
                (om/build-all axis-element
                              (->> ord-data
@@ -120,7 +120,7 @@
                                                    :text-anchor :show-text?])
                    l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                    {:keys [height rbd]} scale
-                   num-data (->> data (map last) vec)
+                   num-data (map last data)
                    height-fn (scale/simple-linear-scale num-data height)
                    domain (.domain height-fn)
                    min-data (first domain)

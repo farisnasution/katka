@@ -26,8 +26,8 @@
       (html [:g {:transform (data/translate g)}
              (let [{:keys [padding width height]} scale
                    {:keys [fill]} style
-                   [ord-data num-data] [(vec (map first data))
-                                        (vec (map last data))]
+                   [ord-data num-data] [(map first data)
+                                        (map last data)]
                    height-fn (scale/simple-linear-scale num-data height)
                    width-fn (scale/simple-ordinal-scale ord-data width padding)
                    z-bottom (height-fn 0)
