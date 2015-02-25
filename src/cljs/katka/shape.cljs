@@ -18,7 +18,8 @@
   (reify
     om/IRender
     (render [_]
-      (html [:rect (select-keys config [:fill :width :height :x :y :rx :ry])]))))
+      (html [:rect (select-keys config [:fill :width :height :stroke
+                                        :stroke-width :x :y :rx :ry])]))))
 
 (defn text
   "Creates a basic React text element.
