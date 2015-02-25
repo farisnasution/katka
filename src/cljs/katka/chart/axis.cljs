@@ -250,8 +250,6 @@
                    domain (.domain width-fn)
                    min-data (first domain)
                    max-data (last domain)
-                   z-left (width-fn 0)
-                   z-right (- width z-left)
                    n-top (-> max-data (/ rbd) math/floor)
                    n-bottom (-> min-data
                                 math/->pos
