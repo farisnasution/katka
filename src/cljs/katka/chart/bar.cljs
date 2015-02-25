@@ -17,7 +17,8 @@
     :scale {:padding <num>
             :width <num>
             :height <num>}
-    :style {:fill <string>}
+    :style {:fill <string>
+            :stroke <string>}
     :data <vector of map>}"
   [{:keys [g scale style data]} owner]
   (reify
@@ -25,7 +26,7 @@
     (render [_]
       (html [:g {:transform (data/translate g)}
              (let [{:keys [padding width height]} scale
-                   {:keys [fill]} style
+                   {:keys [fill stroke]} style
                    [ord-data num-data] [(map first data)
                                         (map last data)]
                    height-fn (scale/simple-linear-scale num-data height)
@@ -45,6 +46,7 @@
                                                          z-top
                                                          (- z-top h))
                                                     :fill fill
+                                                    :stroke stroke
                                                     :react-key idx})))
                                   vec)
                              {:key :react-key}))]))))
@@ -56,44 +58,45 @@
 
   {:svg {:width <num>
          :height <num>}
-  :rects {:padding <num>
-          :fill <string>}
-  :x-axis {:orient <string>
-           :line-axis {:show-line? <bool>
-                       :stroke <string>}
-           :each {:line {:x1 <num>
-                         :y1 <num>
-                         :x2 <num>
-                         :y2 <num>
-                         :stroke <string>}
-                  :text {:x <num>
-                         :y <num>
-                         :dx <num>
-                         :dy <num>
-                         :text-anchor <string>
-                         :content <string>}}
-  :y-axis {:orient <string>
-           :line-axis {:show-line? <bool>
-                       :stroke <string>}
-           :each {:line {:x1 <num>
-                         :y1 <num>
-                         :x2 <num>
-                         :y2 <num>
-                         :stroke <string>}
-                  :text {:x <num>
-                         :y <num>
-                         :dx <num>
-                         :dy <num>
-                         :text-anchor <string>
-                         :content <string>}
-           :rbd <num>}
-  :data <vector of map>}"
+   :rects {:padding <num>
+           :fill <string>
+           :stroke <string>}
+   :x-axis {:orient <string>
+            :line-axis {:show-line? <bool>
+                        :stroke <string>}
+            :each {:line {:x1 <num>
+                          :y1 <num>
+                          :x2 <num>
+                          :y2 <num>
+                          :stroke <string>}
+                   :text {:x <num>
+                          :y <num>
+                          :dx <num>
+                          :dy <num>
+                          :text-anchor <string>
+                          :content <string>}}
+   :y-axis {:orient <string>
+            :line-axis {:show-line? <bool>
+                        :stroke <string>}
+            :each {:line {:x1 <num>
+                          :y1 <num>
+                          :x2 <num>
+                          :y2 <num>
+                          :stroke <string>}
+                   :text {:x <num>
+                          :y <num>
+                          :dx <num>
+                          :dy <num>
+                          :text-anchor <string>
+                          :content <string>}
+            :rbd <num>}
+   :data <vector of map>}"
   [{:keys [svg rects x-axis y-axis retriever-ks data]} owner]
   (reify
     om/IRender
     (render [_]
       (html (let [{:keys [width height]} svg
-                  {:keys [padding fill]} rects
+                  {:keys [padding fill stroke]} rects
                   {:keys [ord-ks num-ks]} retriever-ks
                   margin {:left  40
                           :right 40
@@ -106,14 +109,15 @@
                                          (:top margin)
                                          (:bottom margin))}
                   new-data (data/format-data data ord-ks num-ks)]
-              [:svg svg
+              [:svg (select-keys svg [:width :height])
                (om/build vertical-rects
                          {:g {:pos-x (:left margin)
                               :pos-y (:top margin)}
                           :scale {:padding padding
                                   :width (:width inner-size)
                                   :height (:height inner-size)}
-                          :style {:fill fill}
+                          :style {:fill fill
+                                  :stroke stroke}
                           :data new-data}
                          {:react-key "vertical-rects"})
                (let [{:keys [orient line-axis each]} x-axis
@@ -146,7 +150,7 @@
                      {:keys [text line]} each]
                  (om/build axis/numerical-y-axis
                            {:scale {:height (:height inner-size)
-                                    :rbd (if (nil? rbd) 20 rbd)}
+                                    :rbd (if (number? rbd) rbd 20)}
                             :g {:pos-x (if (= orient "right")
                                          (- width
                                             (:right margin))
