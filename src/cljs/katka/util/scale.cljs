@@ -39,12 +39,14 @@
         (.rangeRoundBands r p))))
 
 (defn simple-linear-scale
-  [num-data max-range]
-  (let [min-value (math/min-value num-data)
-        min-domain (if (neg? min-value) min-value 0)
-        max-domain (math/max-value num-data)]
-    (linear {:d [min-domain max-domain]
-             :r [0 max-range]})))
+  ([num-data min-range max-range]
+   (let [min-value (math/min-value num-data)
+         min-domain (if (neg? min-value) min-value 0)
+         max-domain (math/max-value num-data)]
+     (linear {:d [min-domain max-domain]
+              :r [min-range max-range]})))
+  ([num-data max-range]
+   (simple-linear-scale num-data 0 max-range)))
 
 (defn simple-ordinal-scale
   ([ord-data max-range padding]

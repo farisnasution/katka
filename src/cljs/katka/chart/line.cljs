@@ -31,7 +31,7 @@
                    s (select-keys style [:stroke :stroke-width :fill])
                    [x-num-data y-num-data] [(map first data)
                                             (map last data)]
-                   height-fn (scale/simple-linear-scale y-num-data height)
+                   height-fn (scale/simple-linear-scale y-num-data height 0)
                    width-fn (scale/simple-linear-scale x-num-data width)
                    path-fn (-line-constructor {:interpolation (:interpolation style)
                                                :x-fn #(width-fn (first %))
