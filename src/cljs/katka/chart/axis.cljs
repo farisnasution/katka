@@ -32,9 +32,9 @@
              (om/build shape/line (select-keys line
                                                [:x1 :y1 :x2 :y2 :stroke]))
              (om/build shape/text (select-keys text
-                                               [:x :y :dx :dy
-                                                :text-anchor
-                                                :content]))]))
+                                               [:x :y
+                                                :dx :dy
+                                                :text-anchor :content]))]))
 
 (defcomponent ordinal-x-axis
   "Creates a React x-axis element.

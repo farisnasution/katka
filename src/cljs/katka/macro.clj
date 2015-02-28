@@ -1,12 +1,14 @@
 (ns katka.macro)
 
-(defn method->interface [method]
+(defn method->interface
+  [method]
   (->> (clojure.string/split (str (first method)) #"-")
        (map clojure.string/capitalize)
        (apply str "I")
        (symbol "om.core")))
 
-(defn wrap-html [method]
+(defn wrap-html
+  [method]
   (let [[fname args & body] method]
     (if (contains? #{'render-state 'render} fname)
       `(~fname ~args
