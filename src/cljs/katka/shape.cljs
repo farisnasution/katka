@@ -1,8 +1,9 @@
 (ns katka.shape
   (:require [om.core :as om :include-macros true]
-            [sablono.core :as html :refer-macros [html]]))
+            [sablono.core :as html :refer-macros [html]])
+  (:use-macros [katka.macro :only [defcomponent]]))
 
-(defn rect
+(defcomponent rect
   "Creates a basic React rect element.
 
    Accept:
@@ -15,13 +16,12 @@
     :rx <num>
     :ry <num>}"
   [config owner]
-  (reify
-    om/IRender
-    (render [_]
-      (html [:rect (select-keys config [:fill :width :height :stroke
-                                        :stroke-width :x :y :rx :ry])]))))
+  (display-name [_] "rect")
+  (render [_]
+          [:rect (select-keys config [:fill :width :height :stroke
+                                      :stroke-width :x :y :rx :ry])]))
 
-(defn text
+(defcomponent text
   "Creates a basic React text element.
 
    Accept:
@@ -33,13 +33,13 @@
     :text-anchor <string>
     :transform <string>}"
   [{:keys [content] :as config} owner]
-  (reify
-    om/IRender
-    (render [_]
-      (html [:text (select-keys config [:x :y :dx :dy :text-anchor :transform])
-             content]))))
+  (display-name [_] "text")
+  (render [_]
+          [:text (select-keys config [:x :y :dx :dy
+                                      :text-anchor :transform])
+           content]))
 
-(defn line
+(defcomponent line
   "Creates a basic React line element.
 
    Accept:
@@ -51,13 +51,12 @@
     :stroke <string>
     :stroke-width <num>"
   [config owner]
-  (reify
-    om/IRender
-    (render [_]
-      (html [:line (select-keys config [:x1 :y1 :x2 :y2
-                                        :stroke :stroke-width])]))))
+  (display-name [_] "line")
+  (render [_]
+          [:line (select-keys config [:x1 :y1 :x2 :y2
+                                      :stroke :stroke-width])]))
 
-(defn path
+(defcomponent path
   "Creates a basic React path element.
 
    Accept:
@@ -67,7 +66,6 @@
     :stroke-width <num>
     :fill <string>}"
   [config owner]
-  (reify
-    om/IRender
-    (render [_]
-      (html [:path (select-keys config [:d :stroke :stroke-width :fill])]))))
+  (display-name [_] "path")
+  (render [_]
+          [:path (select-keys config [:d :stroke :stroke-width :fill])]))
