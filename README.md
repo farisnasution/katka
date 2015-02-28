@@ -1,10 +1,6 @@
 # katka
 
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
+Data visualization-as-a-Service, written in ClojureScript + ReactJS.
 
 ## License
 
