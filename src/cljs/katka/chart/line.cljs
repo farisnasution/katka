@@ -56,7 +56,8 @@
                                        (:top margin)
                                        (:bottom margin))}
                 new-data (data/format-data data x-ks y-ks)]
-            [:svg (select-keys svg [:width :height])
+            [:svg {:width width
+                   :height height}
              (om/build single-path {:g {:pos-x (:left margin)
                                         :pos-y (:top margin)}
                                     :scale {:width (:width inner-size)

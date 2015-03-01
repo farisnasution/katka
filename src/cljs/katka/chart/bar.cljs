@@ -115,7 +115,8 @@
                                         (:top margin)
                                         (:bottom margin))}
                  new-data (data/format-data data ord-ks num-ks)]
-             [:svg (select-keys svg [:width :height])
+             [:svg {:width width
+                    :height height}
               (om/build vertical-rects
                         {:g {:pos-x (:left margin)
                              :pos-y (:top margin)}
