@@ -3,8 +3,7 @@
             [sablono.core :as html :refer-macros [html]]
             [katka.shape :as shape]
             [katka.util.data :as data]
-            [katka.scale.ordinal :as osc]
-            [katka.util.dev :as dev])
+            [katka.scale.ordinal :as osc])
   (:use-macros [katka.macro :only [defcomponent not-nil?]]))
 
 (defn -donut-pie-layout
@@ -15,10 +14,6 @@
           (not-nil? start-angle) (.startAngle start-angle)
           (not-nil? end-angle) (.endAngle end-angle)
           (not-nil? pad-angle) (.padAngle pad-angle)))
-
-;; (def q (-donut-pie-layout {:value (fn [d]
-;;                                     (last d))
-;;                            :sort-fn nil}))
 
 (defn -donut-pie-constructor
   [{:keys [inner-radius outer-radius
@@ -65,17 +60,18 @@
                  color-fn (osc/ordinal-scale {:domain ord-data
                                               :range-scale colors})]
              (om/build-all slice-of-donut-pie
-                           (map-indexed (fn [idx d]
-                                          (let [ord-d (first (.-data d))]
-                                            {:path (into p {:fill (color-fn ord-d)
-                                                            :d (donut-pie-fn d)})
-                                             :text (let [centroid (.centroid donut-pie-fn d)
-                                                         computed-g {:pos-x (first centroid)
-                                                                     :pos-y (last centroid)}
-                                                         new-t (into {:g computed-g} t)]
-                                                     (assoc new-t :content ord-d))
-                                             :react-key idx}))
-                                        (donut-pie-factory (apply array data)))
+                           (->> (apply array data)
+                                donut-pie-factory
+                                (map-indexed (fn [idx d]
+                                               (let [ord-d (first (.-data d))]
+                                                 {:path (into p {:fill (color-fn ord-d)
+                                                                 :d (donut-pie-fn d)})
+                                                  :text (let [centroid (.centroid donut-pie-fn d)
+                                                              computed-g {:pos-x (first centroid)
+                                                                          :pos-y (last centroid)}
+                                                              new-t (into {:g computed-g} t)]
+                                                          (assoc new-t :content ord-d))
+                                                  :react-key idx}))))
                            {:key :react-key}))]))
 
 (defcomponent donut-pie-chart
