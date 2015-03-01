@@ -2,7 +2,8 @@
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
             [katka.shape :as shape]
-            [katka.util.scale :as scale]
+            [katka.scale.ordinal :as osc]
+            [katka.scale.linear :as lsc]
             [katka.util.math :as math]
             [katka.util.data :as data])
   (:use-macros [katka.macro :only [defcomponent]]))
@@ -31,13 +32,14 @@
           [:g {:transform (data/translate g)}
              (om/build shape/line (select-keys line
                                                [:x1 :y1 :x2 :y2 :stroke]))
+           (when (true? (:show-text? text))
              (om/build shape/text (select-keys text
                                                [:x :y
                                                 :dx :dy
-                                                :text-anchor :content]))]))
+                                                :text-anchor :content])))]))
 
 (defcomponent ordinal-x-axis
-  "Creates a React x-axis element.
+  "Creates a React x-axis Resetelement.
 
    Accept:
 
@@ -63,24 +65,23 @@
   (display-name [_] "ordinal-x-axis")
   (render [_]
           [:g {:transform (data/translate g)}
-           (let [t (select-keys (:text each {}) [:x :y :dx :dy
-                                                 :text-anchor :show-text?])
-                 l (select-keys (:line each {}) [:x1 :y1 :x2 :y2 :stroke])
+           (let [t (select-keys (:text each) [:x :y :dx :dy
+                                              :text-anchor :show-text?])
+                 l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [width padding]} scale
                  ord-data (map first data)
-                 width-fn (scale/simple-ordinal-scale ord-data width padding)]
+                 width-fn (osc/ordinal-scale {:domain ord-data
+                                              :range-scale [0 width]
+                                              :padding padding})]
              (om/build-all axis-element
-                           (->> ord-data
-                                (map-indexed (fn [idx d]
-                                               {:line l
-                                                :text (if (-> t :show-text? true?)
-                                                        (assoc t :content d)
-                                                        t)
-                                                :g {:pos-x (+ (width-fn d)
-                                                              (/ (.rangeBand width-fn)
-                                                                 2))}
-                                                :react-key idx}))
-                                vec)
+                           (map-indexed (fn [idx d]
+                                          {:line l
+                                           :text (assoc t :content d)
+                                           :g {:pos-x (+ (width-fn d)
+                                                         (/ (.rangeBand width-fn)
+                                                            2))}
+                                           :react-key idx})
+                                        ord-data)
                            {:key :react-key}))
            (let [{:keys [show-line? stroke]} line-axis]
              (when (true? show-line?)
@@ -119,19 +120,18 @@
                  l (select-keys (:line each {}) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [height padding]} scale
                  ord-data (map first data)
-                 height-fn (scale/simple-ordinal-scale ord-data height padding)]
+                 height-fn (osc/ordinal-scale {:domain ord-data
+                                               :range-scale [0 height]
+                                               :padding padding})]
              (om/build-all axis-element
-                           (->> ord-data
-                                (map-indexed (fn [idx d]
-                                               {:line l
-                                                :text (if (-> t :show-text? true?)
-                                                        (assoc t :content d)
-                                                        t)
-                                                :g {:pos-x (+ (height-fn d)
-                                                              (/ (.rangeBand height-fn)
-                                                                 2))}
-                                                :react-key idx}))
-                                vec)
+                           (map-indexed (fn [idx d]
+                                          {:line l
+                                           :text (assoc t :content d)
+                                           :g {:pos-x (+ (height-fn d)
+                                                         (/ (.rangeBand height-fn)
+                                                            2))}
+                                           :react-key idx})
+                                        ord-data)
                            {:key :react-key}))
            (let [{:keys [show-line? stroke]} line-axis]
              (when (true? show-line?)
@@ -170,10 +170,11 @@
                  l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [height rbd]} scale
                  num-data (map last data)
-                 height-fn (scale/simple-linear-scale num-data height)
-                 domain (.domain height-fn)
-                 min-data (first domain)
-                 max-data (last domain)
+                 min-data (let [d (apply min num-data)]
+                            (if (neg? d) d 0))
+                 max-data (apply max num-data)
+                 height-fn (lsc/linear-scale {:domain [min-data max-data]
+                                              :range-scale [0 height]})
                  z-bottom (height-fn 0)
                  z-top (- height z-bottom)
                  n-top (-> max-data (/ rbd) math/floor)
@@ -188,22 +189,19 @@
                                   vec)
                  new-data (concat [min-data] middle-data [max-data])]
              (om/build-all axis-element
-                           (->> new-data
-                                (map-indexed (fn [idx d]
-                                               {:line l
-                                                :text (if (-> t :show-text? true?)
-                                                        (assoc t :content d)
-                                                        t)
-                                                :g {:pos-y (if (neg? d)
-                                                             (+ z-top
-                                                                (-> (height-fn d)
-                                                                    (- z-bottom)
-                                                                    math/->pos))
-                                                             (- z-top
-                                                                (-> (height-fn d)
-                                                                    (- z-bottom))))}
-                                                :react-key idx}))
-                                vec)
+                           (map-indexed (fn [idx d]
+                                          {:line l
+                                           :text (assoc t :content d)
+                                           :g {:pos-y (if (neg? d)
+                                                        (+ z-top
+                                                           (-> (height-fn d)
+                                                               (- z-bottom)
+                                                               math/->pos))
+                                                        (- z-top
+                                                           (-> (height-fn d)
+                                                               (- z-bottom))))}
+                                           :react-key idx})
+                                        new-data)
                            {:key :react-key}))
            (let [{:keys [show-line? stroke]} line-axis]
              (when (true? show-line?)
@@ -242,10 +240,11 @@
                  l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [width rbd]} scale
                  num-data (map first data)
-                 width-fn (scale/simple-linear-scale num-data width)
-                 domain (.domain width-fn)
-                 min-data (first domain)
-                 max-data (last domain)
+                 min-data (let [d (apply min num-data)]
+                            (if (neg? d) d 0))
+                 max-data (apply max num-data)
+                 width-fn (lsc/linear-scale {:domain [min-data max-data]
+                                             :range-scale [0 width]})
                  n-top (-> max-data (/ rbd) math/floor)
                  n-bottom (-> min-data
                               math/->pos
@@ -258,15 +257,12 @@
                                   vec)
                  new-data (concat [min-data] middle-data [max-data])]
              (om/build-all axis-element
-                           (->> new-data
-                                (map-indexed (fn [idx d]
-                                               {:line l
-                                                :text (if (-> t :show-text? true?)
-                                                        (assoc t :content d)
-                                                        t)
-                                                :g {:pos-x (width-fn d)}
-                                                :react-key idx}))
-                                vec)
+                           (map-indexed (fn [idx d]
+                                          {:line l
+                                           :text (assoc t :content d)
+                                           :g {:pos-x (width-fn d)}
+                                           :react-key idx})
+                                        new-data)
                            {:key :react-key}))
            (let [{:keys [show-line? stroke]} line-axis]
              (when (true? show-line?)

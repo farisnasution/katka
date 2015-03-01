@@ -3,7 +3,8 @@
             [sablono.core :as html :refer-macros [html]]
             [katka.shape :as shape]
             [katka.chart.axis :as axis]
-            [katka.util.scale :as scale]
+            [katka.scale.ordinal :as osc]
+            [katka.scale.linear :as lsc]
             [katka.util.math :as math]
             [katka.util.data :as data])
   (:use-macros [katka.macro :only [defcomponent]]))
@@ -29,8 +30,14 @@
                  {:keys [fill stroke]} style
                  [ord-data num-data] [(map first data)
                                       (map last data)]
-                 height-fn (scale/simple-linear-scale num-data height)
-                 width-fn (scale/simple-ordinal-scale ord-data width padding)
+                 min-data (let [d (apply min num-data)]
+                            (if (neg? d) d 0))
+                 max-data (apply max num-data)
+                 height-fn (lsc/linear-scale {:domain [min-data max-data]
+                                              :range-scale [0 height]})
+                 width-fn (osc/ordinal-scale {:domain ord-data
+                                              :range-scale [0 width]
+                                              :padding padding})
                  z-bottom (height-fn 0)
                  z-top (- height z-bottom)]
              (om/build-all shape/rect
