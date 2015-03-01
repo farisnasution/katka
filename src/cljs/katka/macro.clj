@@ -18,6 +18,10 @@
 		~(last body)))
       method)))
 
+(defmacro not-nil?
+  [v]
+  `(not (nil? ~v)))
+
 (defmacro defcomponent
   [name & args]
   (let [[docstring args] (if (-> args first string?)
