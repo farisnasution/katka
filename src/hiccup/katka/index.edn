@@ -18,6 +18,4 @@
   [:script {:type "text/javascript"}
    "goog.require('katka.core')"]
   [:script {:type "text/javascript"}
-   "goog.require('katka.katka_figwheel')"]
-  [:script {:type "text/javascript"}
-   "goog.require('katka.katka_brepl')"]]]
+   "goog.require('katka.katka_figwheel')"]]]
