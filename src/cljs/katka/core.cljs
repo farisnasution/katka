@@ -2,92 +2,82 @@
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
             [katka.chart.bar :as b]
-            [katka.util.query :as q]
-            [katka.util.scale :as s]
-            [katka.util.dev :as d]
-            [katka.chart.shape :as shape]))
+            [katka.chart.line :as l]
+            [katka.chart.area :as a]
+            [katka.chart.donut-pie :as dp]
+            [katka.util.query :as q]))
 
-;; (defonce data (map (fn [r]
-;;                      {:name (str "bah " r)
-;;                       :age (rand 100)}) (range 10)))
+(defonce ordinal-data (map (fn [r]
+                             {:name r
+                              :age (rand-int r)}) (range 50)))
 
-(def data [{:name "faris"
-            :age 37}
-           {:name "farras"
-            :age 30}
-           {:name "lukman"
-            :age 25}
-           {:name "mirhady"
-            :age 10}
-           {:name "herdito"
-            :age 40}
-           {:name "kewer"
-            :age -50}
-           {:name "dana"
-            :age 23}
-           {:name "ican"
-            :age 50}
-           {:name "adiva"
-            :age 24}
-           {:name "foo"
-            :age 34}
-           {:name "bar"
-            :age 97}
-           {:name "baz"
-            :age 54}])
+(def bar-state (atom {:data ordinal-data
+                      :svg {:width 960
+                            :height 500}
+                      :rects {:padding 0.1
+                              :fill "steelblue"}
+                      :retriever-ks {:ord-ks [:name]
+                                     :num-ks [:age]}
+                      :x-axis {:orient "bottom"}
+                      :y-axis {:orient "left"
+                               :rbd 10}}))
 
-(def state (atom {:data data
-                  :svg {:width 960
-                        :height 500}
-                  :rects {:padding 0.1
-                          :fill "steelblue"}
-                  :x-axis {:orient "top"}
-                  :y-axis {:orient "right"}}))
+(om/root b/vertical-bar-chart bar-state {:target (q/get-el-by-id "bar-chart")})
 
-;; (defn bah
-;;   [data owner]
-;;   (reify
-;;     om/IRender
-;;     (render [_]
-;;       (html [:svg {:width 960
-;;                    :height 500}
-;;              (om/build shape/line {:x1 10
-;;                                    :y1 10
-;;                                    :x2 100
-;;                                    :y2 50
-;;                                    :stroke "steelblue"})
-;;              ]))))
+(defonce numerical-data (map (fn [r]
+                               {:x r
+                                :y (rand-int r)}) (range 50)))
 
-;; (om/root bah state {:target (q/get-el-by-id "for-navbar")})
+(def line-state (atom {:data numerical-data
+                       :svg {:width 960
+                             :height 500}
+                       :x-axis {:rbd 10}
+                       :y-axis {:rbd 10}
+                       :retriever-ks {:x-ks [:x]
+                                      :y-ks [:y]}}))
 
-(om/root b/vertical-bar-chart state {:target (q/get-el-by-id "for-navbar")})
+(om/root l/line-chart line-state {:target (q/get-el-by-id "line-chart")})
 
-;; ===================================================================
+(def area-state (atom {:data numerical-data
+                       :svg {:width 960
+                             :height 500}
+                       :area {:fill "steelblue"}
+                       :x-axis {:rbd 10}
+                       :y-axis {:rbd 10}
+                       :retriever-ks {:x-ks [:x]
+                                      :y-ks [:y]}}))
 
-;; (def state (atom {:scale-attrs {:padding 0.1
-;;                                 :container-width 800
-;;                                 :container-height 400}
-;;                   :retriever-ks {:ord-ks [:name]
-;;                                  :num-ks [:score]}
-;;                   :data (map (fn [k]
-;;                                {:name (str "bah" k)
-;;                                 :score (rand 1000)}) (range 799))}))
+(om/root a/area-chart area-state {:target (q/get-el-by-id "area-chart")})
 
-;; (defn chart
-;;   [{:keys [scale-attrs retriever-ks style-attrs data]} owner]
-;;   (reify
-;;     om/IRender
-;;     (render [_]
-;;       (html [:svg {:height (:container-height scale-attrs)
-;;                    :width (:container-width scale-attrs)}
-;;              (om/build b/vertical-rects {:scale-attrs scale-attrs
-;;                                          :retriever-ks retriever-ks
-;;                                          :style-attrs style-attrs
-;;                                          :data data})]))))
+(def pie-state (atom {:data ordinal-data
+                      :svg {:width 950
+                            :height 500}
+                      :style {:inner-r 0
+                              :colors ["steelblue"
+                                       "green"
+                                       "yellow"
+                                       "orange"
+                                       "pink"
+                                       "brown"]}
+                      :retriever-ks {:ord-ks [:name]
+                                     :num-ks [:age]}}))
 
-;; (om/root chart state {:target (q/get-el-by-id "for-navbar")})
+(om/root dp/donut-pie-chart pie-state {:target (q/get-el-by-id "pie-chart")})
 
-;; (util/log (q "b"))
+(def donut-state (atom {:data ordinal-data
+                        :svg {:width 950
+                              :height 500}
+                        :style {:inner-r 100
+                                :colors ["steelblue"
+                                         "green"
+                                         "yellow"
+                                         "orange"
+                                         "pink"
+                                         "brown"]}
+                        :retriever-ks {:ord-ks [:name]
+                                       :num-ks [:age]}}))
+
+(om/root dp/donut-pie-chart donut-state {:target (q/get-el-by-id "donut-chart")})
 
 ;; ===================================================================
 

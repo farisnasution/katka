@@ -7,8 +7,11 @@
   [:link {:rel "stylesheet"
           :href "css/katka.css"}]]
  [:body
-  [:div {:id "for-navbar"}]
-  [:p {:id "my-app"}]
+  [:div {:id "bar-chart"}]
+  [:div {:id "line-chart"}]
+  [:div {:id "pie-chart"}]
+  [:div {:id "donut-chart"}]
+  [:div {:id "area-chart"}]
   [:script {:src "js/out/goog/base.js"
             :type "text/javascript"}]
   [:script {:src "js/vendor/d3.v3.min.js"
