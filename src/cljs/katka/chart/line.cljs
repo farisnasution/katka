@@ -19,9 +19,9 @@
           (not-nil? tension) (.tension tension)
           (not-nil? defined) (.defined defined)))
 
-(defcomponent single-path
+(defcomponent single-line
   [{:keys [g scale path data]} owner]
-  (display-name [_] "single-path")
+  (display-name [_] "single-line")
   (render [_]
           [:g {:transform (data/translate g)}
            (let [{:keys [width height]} scale
@@ -67,7 +67,7 @@
                                                  :fill "white"}
                                                 line)
                                     :data new-data}
-                       {:react-key "single-path"})
+                       {:react-key "single-line"})
              (let [{:keys [orient line-axis each rbd]} x-axis
                    {:keys [text line]} each]
                (om/build axis/numerical-x-axis
