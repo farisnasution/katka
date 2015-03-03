@@ -20,7 +20,10 @@
 
 (defn min-value
   [xs]
-  (apply min xs))
+  (let [d (apply min xs)]
+    (if (neg? d)
+      d
+      0)))
 
 (defn floor
   [x]
