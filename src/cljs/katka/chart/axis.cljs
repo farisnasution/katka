@@ -169,9 +169,8 @@
                  l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [height rbd]} scale
                  num-data (map last data)
-                 min-data (let [d (apply min num-data)]
-                            (if (neg? d) d 0))
-                 max-data (apply max num-data)
+                 min-data (math/min-value num-data)
+                 max-data (math/max-value num-data)
                  height-fn (lsc/linear-scale {:domain [min-data max-data]
                                               :range-scale [0 height]})
                  z-bottom (height-fn 0)
@@ -238,10 +237,9 @@
                                               :text-anchor :show-text?])
                  l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [width rbd]} scale
-                 num-data (map first data)
-                 min-data (let [d (apply min num-data)]
-                            (if (neg? d) d 0))
-                 max-data (apply max num-data)
+                 num-data (map last data)
+                 min-data (math/min-value num-data)
+                 max-data (math/max-value num-data)
                  width-fn (lsc/linear-scale {:domain [min-data max-data]
                                              :range-scale [0 width]})
                  n-top (-> max-data (/ rbd) math/floor)

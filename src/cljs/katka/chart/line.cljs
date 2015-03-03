@@ -4,16 +4,20 @@
             [katka.shape :as shape]
             [katka.chart.axis :as axis]
             [katka.util.data :as data]
-            [katka.scale.linear :as lsc]
-            [katka.util.dev :as d])
+            [katka.util.math :as math]
+            [katka.scale.linear :as lsc])
   (:use-macros [katka.macro :only [defcomponent not-nil?]]))
 
 (defn -line-constructor
-  [{:keys [interpolation x-fn y-fn]}]
+  [{:keys [interpolation x y
+           tension defined radius
+           angle]}]
   (cond-> (.line (.-svg js/d3))
           (not-nil? interpolation) (.interpolate interpolation)
-          (not-nil? x-fn) (.x x-fn)
-          (not-nil? y-fn) (.y y-fn)))
+          (not-nil? x) (.x x)
+          (not-nil? y) (.y y)
+          (not-nil? tension) (.tension tension)
+          (not-nil? defined) (.defined defined)))
 
 (defcomponent single-path
   [{:keys [g scale path data]} owner]
@@ -21,23 +25,20 @@
   (render [_]
           [:g {:transform (data/translate g)}
            (let [{:keys [width height]} scale
-                 s (select-keys path [:stroke :stroke-width :fill])
-                 [x-num-data y-num-data] [(map first data)
-                                          (map last data)]
-                 y-min-data (let [d (apply min y-num-data)]
-                              (if (neg? d) d 0))
-                 y-max-data (apply max y-num-data)
-                 x-min-data (let [d (apply min x-num-data)]
-                              (if (neg? d) d 0))
-                 x-max-data (apply max x-num-data)
+                 p (select-keys path [:stroke :stroke-width :fill])
+                 [x-num-data y-num-data] (data/separate-data data)
+                 y-min-data (math/min-value y-num-data)
+                 y-max-data (math/max-value y-num-data)
+                 x-min-data (math/min-value x-num-data)
+                 x-max-data (math/max-value x-num-data)
                  height-fn (lsc/linear-scale {:domain [y-min-data y-max-data]
                                               :range-scale [height 0]})
                  width-fn (lsc/linear-scale {:domain [x-min-data x-max-data]
                                              :range-scale [0 width]})
                  path-fn (-line-constructor {:interpolation (:interpolation path)
-                                             :x-fn #(width-fn (first %))
-                                             :y-fn #(height-fn (last %))})]
-             (om/build shape/path (assoc s :d (path-fn (apply array data)))))]))
+                                             :x #(width-fn (first %))
+                                             :y #(height-fn (last %))})]
+             (om/build shape/path (assoc p :d (path-fn (apply array data)))))]))
 
 (defcomponent line-chart
   [{:keys [svg line x-axis y-axis retriever-ks data]} owner]

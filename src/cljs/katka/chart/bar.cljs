@@ -28,11 +28,9 @@
           [:g {:transform (data/translate g)}
            (let [{:keys [padding width height]} scale
                  {:keys [fill stroke]} style
-                 [ord-data num-data] [(map first data)
-                                      (map last data)]
-                 min-data (let [d (apply min num-data)]
-                            (if (neg? d) d 0))
-                 max-data (apply max num-data)
+                 [ord-data num-data] (data/separate-data data)
+                 min-data (math/min-value num-data)
+                 max-data (math/max-value num-data)
                  height-fn (lsc/linear-scale {:domain [min-data max-data]
                                               :range-scale [0 height]})
                  width-fn (osc/ordinal-scale {:domain ord-data
