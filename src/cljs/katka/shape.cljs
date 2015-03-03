@@ -32,12 +32,12 @@
     :dy <num>
     :text-anchor <string>
     :transform <string>}"
-  [{:keys [content] :as config} owner]
+  [config owner]
   (display-name [_] "text")
   (render [_]
           [:text (select-keys config [:x :y :dx :dy
                                       :text-anchor :transform])
-           content]))
+           (:content config)]))
 
 (defcomponent line
   "Creates a basic React line element.
