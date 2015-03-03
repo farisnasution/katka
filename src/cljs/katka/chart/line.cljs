@@ -41,7 +41,7 @@
              (om/build shape/path (assoc p :d (path-fn (apply array data)))))]))
 
 (defcomponent line-chart
-  [{:keys [svg line x-axis y-axis retriever-ks data]} owner]
+  [{:keys [svg line-el x-axis y-axis retriever-ks data]} owner]
   (display-name [_] "line-chart")
   (render [_]
           (let [{:keys [width height]} svg
@@ -59,13 +59,13 @@
                 new-data (data/format-data data x-ks y-ks)]
             [:svg {:width width
                    :height height}
-             (om/build single-path {:g {:pos-x (:left margin)
+             (om/build single-line {:g {:pos-x (:left margin)
                                         :pos-y (:top margin)}
                                     :scale {:width (:width inner-size)
                                             :height (:height inner-size)}
                                     :path (into {:stroke "black"
                                                  :fill "white"}
-                                                line)
+                                                line-el)
                                     :data new-data}
                        {:react-key "single-line"})
              (let [{:keys [orient line-axis each rbd]} x-axis
