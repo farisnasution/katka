@@ -4,10 +4,15 @@
   [data ks]
   (map #(get-in % ks) data))
 
+(defn separate-data
+  [data]
+  [(map first data) (map last data)])
+
 (defn format-data
-  [data ord-ks num-ks]
-  (let [f (juxt #(get-in % ord-ks) #(get-in % num-ks))]
-    (map f data)))
+  [data o-ks n-ks]
+  (map (juxt #(get-in % o-ks)
+             #(get-in % n-ks))
+       data))
 
 (defn pos-data
   [data ks]
