@@ -237,7 +237,7 @@
                                               :text-anchor :show-text?])
                  l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
                  {:keys [width rbd]} scale
-                 num-data (map last data)
+                 num-data (map first data)
                  min-data (math/min-value num-data)
                  max-data (math/max-value num-data)
                  width-fn (lsc/linear-scale {:domain [min-data max-data]
