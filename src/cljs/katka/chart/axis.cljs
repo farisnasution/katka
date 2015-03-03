@@ -71,8 +71,7 @@
                  {:keys [width padding]} scale
                  ord-data (map first data)
                  width-fn (osc/ordinal-scale {:domain ord-data
-                                              :range-scale [0 width]
-                                              :padding padding})]
+                                              :range-bands [[0 width] padding]})]
              (om/build-all axis-element
                            (map-indexed (fn [idx d]
                                           {:line l

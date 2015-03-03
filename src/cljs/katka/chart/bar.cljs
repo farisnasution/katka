@@ -36,8 +36,7 @@
                  height-fn (lsc/linear-scale {:domain [min-data max-data]
                                               :range-scale [0 height]})
                  width-fn (osc/ordinal-scale {:domain ord-data
-                                              :range-scale [0 width]
-                                              :padding padding})
+                                              :range-bands [[0 width] padding]})
                  z-bottom (height-fn 0)
                  z-top (- height z-bottom)]
              (om/build-all shape/rect
