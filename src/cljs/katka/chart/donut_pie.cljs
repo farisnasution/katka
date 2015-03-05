@@ -6,7 +6,7 @@
             [katka.scale.ordinal :as osc])
   (:use-macros [katka.macro :only [defcomponent not-nil?]]))
 
-(defn -donut-pie-layout
+(defn donut-pie-layout
   [{:keys [value sort-fn start-angle end-angle pad-angle]}]
   (cond-> (.pie (.-layout js/d3))
           (not-nil? value) (.value value)
@@ -15,7 +15,7 @@
           (not-nil? end-angle) (.endAngle end-angle)
           (not-nil? pad-angle) (.padAngle pad-angle)))
 
-(defn -donut-pie-constructor
+(defn donut-pie-constructor
   [{:keys [inner-radius outer-radius
            corner-radius pad-radius
            start-angle end-angle
@@ -34,75 +34,98 @@
   (display-name [_] "slice-of-donut-pie")
   (render [_]
           [:g {}
-           (om/build shape/path (select-keys path [:stroke :stroke-width
-                                                   :fill :d]))
+           (om/build shape/path path)
            (when (true? (:show-text? text))
              [:g {:transform (data/translate (:g text))}
-              (om/build shape/text (select-keys text [:x :y
-                                                      :dx :dy
-                                                      :text-anchor :content]))])]))
+              (om/build shape/text text)])]))
+
+(defn get-ordinal-data
+  [d]
+  (first (.-data d)))
+
+(defn construct-path
+  [path-opts color-fn donut-pie-fn]
+  (fn [ord-data num-data]
+    (into {:fill (color-fn ord-data)
+           :d (donut-pie-fn num-data)}
+          path-opts)))
+
+(defn construct-text
+  [text-opts donut-pie-fn]
+  (fn [ord-data num-data]
+    (let [centroid (.centroid donut-pie-fn num-data)
+          g {:pos-x (first centroid)
+             :pos-y (second centroid)}]
+      (into {:g g
+             :content ord-data
+             :show-text? true
+             :text-anchor "middle"}
+            text-opts))))
 
 (defcomponent donuts-pies
   [{:keys [each g style scale data]} owner]
   (display-name [_] "donuts-pies")
   (render [_]
           [:g {:transform (data/translate g)}
-           (let [t (select-keys (:text each) [:x :y :dx :dy
-                                              :text-anchor :show-text?])
-                 p (select-keys (:path each) [:stroke :stroke-width])
-                 {:keys [outer-r inner-r]} scale
+           (let [{:keys [outer-r inner-r]} scale
                  {:keys [colors]} style
-                 donut-pie-factory (-donut-pie-layout {:value (fn [d] (last d))
+                 donut-pie-factory (donut-pie-layout {:value (fn [d] (second d))
                                                        :sort-fn nil})
-                 donut-pie-fn (-donut-pie-constructor {:outer-radius outer-r
+                 donut-pie-fn (donut-pie-constructor {:outer-radius outer-r
                                                        :inner-radius inner-r})
                  ord-data (map first data)
                  color-fn (osc/ordinal-scale {:domain ord-data
-                                              :range-scale colors})]
+                                              :range-scale colors})
+                 path-constructor (construct-path (:path each)
+                                                  color-fn
+                                                  donut-pie-fn)
+                 text-constructor (construct-text (:text each) donut-pie-fn)]
              (om/build-all slice-of-donut-pie
                            (->> (apply array data)
                                 donut-pie-factory
-                                (map-indexed (fn [idx d]
-                                               (let [ord-d (first (.-data d))]
-                                                 {:path (into p {:fill (color-fn ord-d)
-                                                                 :d (donut-pie-fn d)})
-                                                  :text (let [centroid (.centroid donut-pie-fn d)
-                                                              computed-g {:pos-x (first centroid)
-                                                                          :pos-y (last centroid)}
-                                                              new-t (into {:g computed-g} t)]
-                                                          (assoc new-t :content ord-d))
+                                (map-indexed (fn [idx data]
+                                               (let [ord-d (get-ordinal-data data)]
+                                                 {:path (path-constructor ord-d
+                                                                          data)
+                                                  :text (text-constructor ord-d
+                                                                          data)
                                                   :react-key idx}))))
                            {:key :react-key}))]))
 
+(defn construct-scale-opts
+  [{:keys [width height]} inner-r]
+  {:outer-r (/ (min width height) 2)
+   :inner-r (if (pos? inner-r)
+              inner-r
+              0)})
+
+(defn construct-g-opts
+  [{:keys [width height]}]
+  {:pos-x (/ width 2)
+   :pos-y (/ height 2)})
+
 (defcomponent donut-pie-chart
-  [{:keys [svg dp style retriever-ks data]} owner]
-  (display-name [_] "donut-pie-chart")
+  [{:keys [svg text path style retriever-ks data]} owner]
+  (display-name [_] (if (pos? (:inner-r style))
+                      "donut-chart"
+                      "pie-chart"))
   (render [_]
           (let [{:keys [width height]} svg
                 {:keys [ord-ks num-ks]} retriever-ks
                 {:keys [colors inner-r]} style
-                {:keys [text path]} dp
                 margin {:left  40
                         :right 40
                         :top 30
                         :bottom 30}
-                inner-size {:width (- width
-                                      (:left margin)
-                                      (:right margin))
-                            :height (- height
-                                       (:top margin)
-                                       (:bottom margin))}
-                radius (/ (min (:width inner-size) (:height inner-size)) 2)
+                container (data/inner-container width height margin)
+                radius (/ (min (:width container) (:height container)) 2)
                 new-data (data/format-data data ord-ks num-ks)]
             [:svg {:width width
                    :height height}
-             (om/build donuts-pies {:each {:text (into {:show-text? true
-                                                        :text-anchor "middle"}
-                                                       text)
+             (om/build donuts-pies {:each {:text text
                                            :path path}
-                                    :g {:pos-x (/ width 2)
-                                        :pos-y (/ height 2)}
+                                    :g (construct-g-opts container)
                                     :style {:colors colors}
-                                    :scale {:outer-r radius
-                                            :inner-r inner-r}
+                                    :scale (construct-scale-opts container
+                                                                 inner-r)
                                     :data new-data})])))
