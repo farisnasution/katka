@@ -2,266 +2,176 @@
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
             [katka.shape :as shape]
-            [katka.scale.ordinal :as osc]
-            [katka.scale.linear :as lsc]
             [katka.util.math :as math]
             [katka.util.data :as data])
   (:use-macros [katka.macro :only [defcomponent]]))
 
 (defcomponent axis-element
-  "Creates a React axis element.
-
-   Accept:
-
-   {:line {:x1 <num>
-           :y1 <num>
-           :x2 <num>
-           :y2 <num>
-           :stroke <string>}
-    :text {:x <num>
-           :y <num>
-           :dx <num>
-           :dy <num>
-           :text-anchor <string>
-           :content <string>}
-    :g {:pos-x <num>
-        :pos-y <num>}}"
   [{:keys [line text g]} owner]
   (display-name [_] "axis-element")
   (render [_]
           [:g {:transform (data/translate g)}
-             (om/build shape/line (select-keys line
-                                               [:x1 :y1 :x2 :y2 :stroke]))
+           (om/build shape/line line)
            (when (true? (:show-text? text))
-             (om/build shape/text (select-keys text
-                                               [:x :y
-                                                :dx :dy
-                                                :text-anchor :content])))]))
+             (om/build shape/text text))]))
 
-(defcomponent ordinal-x-axis
-  "Creates a React x-axis Resetelement.
+(defn ordinal-g
+  [scale orient]
+  (fn [d]
+    (let [value (+ (scale d)
+                   (/ (.rangeBand scale) 2))]
+      (if (or (= orient "top")
+              (= orient "bottom"))
+        {:pos-x value}
+        {:pos-y value}))))
 
-   Accept:
+(defn numerical-data
+  ([min-data max-data ticks]
+   (let [new-ticks (if (and (number? ticks)
+                            (pos? ticks))
+                     ticks
+                     10)
+         n-bottom (-> min-data
+                      math/->pos
+                      (/ new-ticks)
+                      math/floor
+                      math/->neg)
+         n-top (-> max-data (/ new-ticks) math/floor)
+         middle-data (->> (+ n-top 1)
+                          (range n-bottom)
+                          (map #(* % new-ticks)))]
+     (concat [min-data] middle-data [max-data])))
+  ([min-data max-data]
+   (numerical-data min-data max-data 10)))
 
-   {:each {:line {:x1 <num>
-                  :y1 <num>
-                  :x2 <num>
-                  :y2 <num>
-                  :stroke <string>}
-           :text {:x <num>
-                  :y <num>
-                  :dx <num>
-                  :dy <num>
-                  :text-anchor <string>
-                  :content <string>}}
-   :g {:pos-x <num>
-       :pos-y <num>}
-   :scale {:width <num>
-           :padding <num>}
-   :line-axis  {:show-line? <bool>
-                :stroke <string>}
-   :data <vector of map>}"
-  [{:keys [each g scale line-axis data]} owner]
-  (display-name [_] "ordinal-x-axis")
+(defn numerical-g
+  [scale orient]
+  (if (or (= orient "top")
+          (= orient "bottom"))
+    (fn [d]
+      {:pos-x (scale d)})
+    (fn [d]
+      {:pos-y (scale d)})))
+
+(defn construct-g
+  [scale-type scale-fn orient]
+  (if (= scale-type "ordinal")
+    (ordinal-g scale-fn orient)
+    (numerical-g scale-fn orient)))
+
+(defn construct-line
+  [line-opts orient]
+  (merge (condp = orient
+           "top" {:y2 "-0.5em"}
+           "bottom" {:y2 "0.5em"}
+           "left" {:x2 "-6"}
+           "right" {:x2 "6"}
+           {:x2 "-6"})
+         {:stroke "black"}
+         line-opts))
+
+(defn construct-text
+  [text-opts orient]
+  (merge {:show-text? true}
+         (condp = orient
+           "top" {:dy "-1.4em"
+                  :text-anchor "middle"}
+           "bottom" {:dy "1.4em"
+                     :text-anchor "middle"}
+           "left" {:dx "-1.4em"
+                   :text-anchor "end"}
+           "right" {:dx "1.4em"
+                    :text-anchor "start"}
+           {:dx "-1.4em"
+            :text-anchor "end"})
+         text-opts))
+
+(defn get-axis-data
+  [scale-type scale-ticks {:keys [min-data max-data all-data]}]
+  (if (= scale-type "ordinal")
+    all-data
+    (numerical-data min-data max-data scale-ticks)))
+
+(defn construct-end-text
+  [end-text-opts orient]
+  (merge (condp = orient
+           "top" {:x -6
+                  :dx "-0.71em"
+                  :text-anchor "middle"}
+           "bottom" {:x 6
+                     :dx "0.71em"
+                     :text-anchor "middle"}
+           "left"  {:transform "rotate(-90)"
+                    :y 6
+                    :dy "0.71em"
+                    :text-anchor "end"}
+           "right" {:transform "rotate(-90)"
+                    :y -6
+                    :dy "-0.71em"
+                    :text-anchor "end"}
+           {:transform "rotate(-90)"
+            :y 6
+            :dy "0.71em"
+            :text-anchor "end"})
+         {:show-text? true}
+         end-text-opts))
+
+(defn construct-outer-g
+  [{:keys [size margin]} orient]
+  (condp = orient
+    "top" {:pos-x (:left margin)
+           :pos-y (:top margin)}
+    "bottom" {:pos-x (:left margin)
+              :pos-y (- (:height size)
+                        (:bottom margin))}
+    "left" {:pos-x (:left margin)
+            :pos-y (:top margin)}
+    "right" {:pos-x (- (:width size)
+                       (:right margin))
+             :pos-y (:top margin)}
+    {:pos-x (:left margin)
+     :pos-y (:top margin)}))
+
+(defn construct-line-axis
+  [line-axis {:keys [size margin]} orient]
+  (merge {:stroke "black"
+          :show-line? true}
+         (if (or (= orient "top")
+                 (= orient "bottom"))
+           {:x2 (- (:width size)
+                   (:left margin)
+                   (:right margin))}
+           {:y2 (- (:height size)
+                   (:top margin)
+                   (:bottom margin))})
+         line-axis))
+
+(defcomponent axis
+  [{:keys [outer-container each orient scale end-text line-axis data]} owner]
+  (display-name [_] (str orient "-" (:scale-type scale) "-axis"))
   (render [_]
-          [:g {:transform (data/translate g)}
-           (let [t (select-keys (:text each) [:x :y :dx :dy
-                                              :text-anchor :show-text?])
-                 l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
-                 {:keys [width padding]} scale
-                 ord-data (map first data)
-                 width-fn (osc/ordinal-scale {:domain ord-data
-                                              :range-bands [[0 width] padding]})]
+          [:g {:transform (data/translate (construct-outer-g outer-container
+                                                             orient))}
+           (let [{:keys [scale-type scale-fn scale-ticks]} scale
+                 text-opts (construct-text (:text each) orient)
+                 line-opts (construct-line (:line each) orient)
+                 g-creator (construct-g scale-type scale-fn orient)]
              (om/build-all axis-element
-                           (map-indexed (fn [idx d]
-                                          {:line l
-                                           :text (assoc t :content d)
-                                           :g {:pos-x (+ (width-fn d)
-                                                         (/ (.rangeBand width-fn)
-                                                            2))}
-                                           :react-key idx})
-                                        ord-data)
+                           (->> data
+                                (get-axis-data scale-type scale-ticks)
+                                (map-indexed (fn [idx d]
+                                               {:line line-opts
+                                                :text (assoc text-opts :content d)
+                                                :g (g-creator d)
+                                                :react-key idx})))
                            {:key :react-key}))
-           (let [{:keys [show-line? stroke]} line-axis]
-             (when (true? show-line?)
-               (om/build shape/line {:x2 (:width scale)
-                                     :stroke stroke})))]))
-
-(defcomponent ordinal-y-axis
-  "Creates a React x-axis element.
-
-   Accept:
-
-   {:each {:line {:x1 <num>
-                  :y1 <num>
-                  :x2 <num>
-                  :y2 <num>
-                  :stroke <string>}
-           :text {:x <num>
-                  :y <num>
-                  :dx <num>
-                  :dy <num>
-                  :text-anchor <string>
-                  :content <string>}}
-   :g {:pos-x <num>
-       :pos-y <num>}
-   :scale {:height <num>
-           :padding <num>}
-   :line-axis  {:show-line? <bool>
-                :stroke <string>}
-   :data <vector of map>}"
-  [{:keys [each g scale line-axis data]} owner]
-  (display-name [_] "ordinal-y-axis")
-  (render [_]
-          [:g {:transform (data/translate g)}
-           (let [t (select-keys (:text each {}) [:x :y :dx :dy
-                                                 :text-anchor :show-text?])
-                 l (select-keys (:line each {}) [:x1 :y1 :x2 :y2 :stroke])
-                 {:keys [height padding]} scale
-                 ord-data (map first data)
-                 height-fn (osc/ordinal-scale {:domain ord-data
-                                               :range-scale [0 height]
-                                               :padding padding})]
-             (om/build-all axis-element
-                           (map-indexed (fn [idx d]
-                                          {:line l
-                                           :text (assoc t :content d)
-                                           :g {:pos-x (+ (height-fn d)
-                                                         (/ (.rangeBand height-fn)
-                                                            2))}
-                                           :react-key idx})
-                                        ord-data)
-                           {:key :react-key}))
-           (let [{:keys [show-line? stroke]} line-axis]
-             (when (true? show-line?)
-               (om/build shape/line {:x2 (:height scale)
-                                     :stroke stroke})))]))
-
-(defcomponent numerical-y-axis
-  "Creates a React y-axis element.
-
-   Accept:
-
-   {:each {:line {:x1 <num>
-                  :y1 <num>
-                  :x2 <num>
-                  :y2 <num>
-                  :stroke <string>}
-           :text {:x <num>
-                  :y <num>
-                  :dx <num>
-                  :dy <num>
-                  :text-anchor <string>
-                  :content <string>}}
-    :g {:pos-x <num>
-        :pos-y <num>}
-    :scale {:height <num>
-            :rbd <num>}
-    :line-axis  {:show-line? <bool>
-                 :stroke <string>}
-    :data <vector of map>}"
-  [{:keys [each g scale line-axis data]} owner]
-  (display-name [_] "numerical-y-axis")
-  (render [_]
-          [:g {:transform (data/translate g)}
-           (let [t (select-keys (:text each) [:x :y :dx :dy
-                                              :text-anchor :show-text?])
-                 l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
-                 {:keys [height rbd]} scale
-                 num-data (map last data)
-                 min-data (math/min-value num-data)
-                 max-data (math/max-value num-data)
-                 height-fn (lsc/linear-scale {:domain [min-data max-data]
-                                              :range-scale [0 height]})
-                 z-bottom (height-fn 0)
-                 z-top (- height z-bottom)
-                 n-top (-> max-data (/ rbd) math/floor)
-                 n-bottom (-> min-data
-                              math/->pos
-                              (/ rbd)
-                              math/floor
-                              math/->neg)
-                 middle-data (->> (+ n-top 1)
-                                  (range n-bottom)
-                                  (map #(* % rbd))
-                                  vec)
-                 new-data (concat [min-data] middle-data [max-data])]
-             (om/build-all axis-element
-                           (map-indexed (fn [idx d]
-                                          {:line l
-                                           :text (assoc t :content d)
-                                           :g {:pos-y (if (neg? d)
-                                                        (+ z-top
-                                                           (-> (height-fn d)
-                                                               (- z-bottom)
-                                                               math/->pos))
-                                                        (- z-top
-                                                           (-> (height-fn d)
-                                                               (- z-bottom))))}
-                                           :react-key idx})
-                                        new-data)
-                           {:key :react-key}))
-           (let [{:keys [show-line? stroke]} line-axis]
-             (when (true? show-line?)
-               (om/build shape/line {:y2 (:height scale)
-                                     :stroke stroke})))]))
-
-(defcomponent numerical-x-axis
-  "Creates a React x-axis element.
-
-   Accept:
-
-   {:each {:line {:x1 <num>
-                  :y1 <num>
-                  :x2 <num>
-                  :y2 <num>
-                  :stroke <string>}
-           :text {:x <num>
-                  :y <num>
-                  :dx <num>
-                  :dy <num>
-                  :text-anchor <string>
-                  :content <string>}}
-    :g {:pos-x <num>
-        :pos-y <num>}
-    :scale {:width <num>
-            :rbd <num>}
-    :line-axis  {:show-line? <bool>
-                 :stroke <string>}
-    :data <vector of map>}"
-  [{:keys [each g scale line-axis data]} owner]
-  (display-name [_] "numerical-x-axis")
-  (render [_]
-          [:g {:transform (data/translate g)}
-           (let [t (select-keys (:text each) [:x :y :dx :dy
-                                              :text-anchor :show-text?])
-                 l (select-keys (:line each) [:x1 :y1 :x2 :y2 :stroke])
-                 {:keys [width rbd]} scale
-                 num-data (map first data)
-                 min-data (math/min-value num-data)
-                 max-data (math/max-value num-data)
-                 width-fn (lsc/linear-scale {:domain [min-data max-data]
-                                             :range-scale [0 width]})
-                 n-top (-> max-data (/ rbd) math/floor)
-                 n-bottom (-> min-data
-                              math/->pos
-                              (/ rbd)
-                              math/floor
-                              math/->neg)
-                 middle-data (->> (+ n-top 1)
-                                  (range n-bottom)
-                                  (map #(* % rbd))
-                                  vec)
-                 new-data (concat [min-data] middle-data [max-data])]
-             (om/build-all axis-element
-                           (map-indexed (fn [idx d]
-                                          {:line l
-                                           :text (assoc t :content d)
-                                           :g {:pos-x (width-fn d)}
-                                           :react-key idx})
-                                        new-data)
-                           {:key :react-key}))
-           (let [{:keys [show-line? stroke]} line-axis]
-             (when (true? show-line?)
-               (om/build shape/line {:x2 (:width scale)
-                                     :stroke stroke})))]))
+           (let [end-text-opts (construct-end-text end-text orient)]
+             (when (true? (:show-text? end-text-opts))
+               (om/build shape/text end-text-opts)))
+           (let [line-axis-opts (construct-line-axis line-axis
+                                                     (:size outer-container)
+                                                     orient)]
+             (when (true? (:show-line? line-axis-opts))
+               (om/build shape/line (construct-line-axis line-axis
+                                                         outer-container
+                                                         orient))))]))
