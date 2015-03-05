@@ -9,10 +9,11 @@
   [(map first data) (map last data)])
 
 (defn format-data
-  [data o-ks n-ks]
-  (map (juxt #(get-in % o-ks)
-             #(get-in % n-ks))
-       data))
+  [data & ks]
+  (let [fns (map (fn [k]
+                   #(get-in % k)) ks)
+        f (apply juxt fns)]
+    (map f data)))
 
 (defn pos-data
   [data ks]
