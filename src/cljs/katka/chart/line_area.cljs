@@ -2,7 +2,7 @@
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
             [katka.shape :as shape]
-            [katka.chart.axis :as axis]
+            [katka.chart.axis :as ax]
             [katka.util.data :as data]
             [katka.util.math :as math]
             [katka.scale.linear :as lsc])
