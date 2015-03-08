@@ -74,8 +74,10 @@
                  donut-pie-fn (donut-pie-constructor {:outer-radius outer-r
                                                        :inner-radius inner-r})
                  ord-data (map first data)
-                 color-fn (osc/ordinal-scale {:domain ord-data
-                                              :range-scale colors})
+                 color-fn (if (nil? colors)
+                            (osc/ordinal-20c)
+                            (osc/ordinal-scale {:domain ord-data
+                                                :range-scale colors}))
                  path-constructor (construct-path (:path each)
                                                   color-fn
                                                   donut-pie-fn)
