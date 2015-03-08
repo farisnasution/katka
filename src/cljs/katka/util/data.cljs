@@ -5,8 +5,8 @@
   (map #(get-in % ks) data))
 
 (defn separate-data
-  [data]
-  [(map first data) (map last data)])
+  [m]
+  (apply map vector m))
 
 (defn format-data
   [data & ks]
