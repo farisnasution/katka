@@ -158,8 +158,7 @@
                                            :data (map vec x-num-data ds)
                                            :react-key idx})
                                         y-num-data)
-                           {:key :react-key}
-                           {:react-key "single-line-area"})
+                           {:key :react-key})
              (let [{:keys [orient line-axis end-text each]} x-axis]
                (om/build ax/axis
                          {:outer-container {:size svg
