@@ -66,7 +66,7 @@
                         :top 30
                         :bottom 30}
                 container (data/inner-container width height margin)
-                new-data (data/format-data data x-ks max-y-ks min-y-ks)
+                new-data (data/format-data data x-ks y-max-ks y-min-ks)
                 [x-num-data & y-num-data] (data/separate-data new-data)
                 x-min-data (math/min-value x-num-data)
                 x-max-data (math/max-value x-num-data)
