@@ -69,4 +69,4 @@
 
 (defn ordinal-20c
   []
-  (.category20bc (.-scale js/d3)))
+  (.category20c (.-scale js/d3)))
