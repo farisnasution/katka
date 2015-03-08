@@ -79,11 +79,11 @@
                                            :range-scale [0 width]})
                 y-scale (lsc/linear-scale {:domain [y-min-data y-max-data]
                                            :range-scale [height 0]})
-                area-fn (-area-constructor {:x #(x-scale (first %))
-                                            :y0 (if (nil? y-min-ks)
-                                                  height
-                                                  #(y-scale (last %)))
-                                            :y1 #(y-scale (second %))})]
+                area-fn (area-constructor {:x #(x-scale (first %))
+                                           :y0 (if (nil? y-min-ks)
+                                                 height
+                                                 #(y-scale (last %)))
+                                           :y1 #(y-scale (second %))})]
             [:svg {:width width
                    :height height}
              (om/build single-line-area
@@ -145,8 +145,8 @@
                                            :range-scale [0 width]})
                 y-scale (lsc/linear-scale {:domain [y-min-data y-max-data]
                                            :range-scale [height 0]})
-                line-fn (-line-constructor {:x #(x-scale (first %))
-                                            :y #(y-scale (second %))})]
+                line-fn (line-constructor {:x #(x-scale (first %))
+                                           :y #(y-scale (second %))})]
             [:svg {:width width
                    :height height}
              (om/build-all single-line-area
