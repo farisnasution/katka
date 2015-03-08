@@ -85,4 +85,4 @@
   [config owner]
   (display-name [_] "circle")
   (render [_]
-          [:circle (select-keys config [:cx :cy :r :transform])]))
+          [:circle (select-keys config [:cx :cy :r :fill :transform])]))
