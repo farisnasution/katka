@@ -57,15 +57,15 @@
                  x-creator (construct-x x-scale rect-type)
                  y-creator (construct-y y-scale rect-type)]
              (om/build-all shape/rect
-                           (->> data
-                                (map-indexed (fn [idx d]
-                                               {:width (width-creator d)
-                                                :height (height-creator d)
-                                                :x (x-creator d)
-                                                :y (y-creator d)
-                                                :fill fill
-                                                :stroke stroke
-                                                :react-key idx})))
+                           (map-indexed (fn [idx d]
+                                          {:width (width-creator d)
+                                           :height (height-creator d)
+                                           :x (x-creator d)
+                                           :y (y-creator d)
+                                           :fill fill
+                                           :stroke stroke
+                                           :react-key idx})
+                                        data)
                            {:key :react-key}))]))
 
 (defn construct-scale
