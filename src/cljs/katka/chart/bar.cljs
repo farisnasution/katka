@@ -31,7 +31,7 @@
   [scale rect-type]
   (if (= rect-type "horizontal")
     (fn [[_ d]]
-      (if (neg? d)
+      (if (pos? d)
         (scale 0)
         (scale d)))
     (fn [[d _]] (scale d))))
@@ -45,13 +45,18 @@
         (scale 0)
         (scale d)))))
 
+(defn construct-style
+  [style-opts]
+  (into {:fill "steelblue"}
+        style-opts))
+
 (defcomponent rects
   [{:keys [g scale style rect-type data]} owner]
   (display-name [_] (str rect-type "-rects"))
   (render [_]
           [:g {:transform (data/translate g)}
            (let [{:keys [x-scale y-scale]} scale
-                 {:keys [fill stroke]} style
+                 {:keys [fill stroke]} (construct-style style)
                  width-creator (construct-width x-scale rect-type)
                  height-creator (construct-height y-scale rect-type)
                  x-creator (construct-x x-scale rect-type)
@@ -69,10 +74,10 @@
                            {:key :react-key}))]))
 
 (defn construct-scale
-  [rect-type min-data max-data ord-data padding width height]
+  [rect-type min-data max-data ord-data padding {:keys [width height]}]
   (if (= "horizontal" rect-type)
     {:x-scale (lsc/linear-scale {:domain [min-data max-data]
-                                 :range-scale [width 0]})
+                                 :range-scale [0 width]})
      :y-scale (osc/ordinal-scale {:domain ord-data
                                   :range-bands [[0 height] padding]})}
     {:x-scale (osc/ordinal-scale {:domain ord-data
@@ -81,11 +86,11 @@
                                  :range-scale [height 0]}) }))
 
 (defcomponent bar-chart
-  [{:keys [svg rect-type rects-opts x-axis y-axis retriever-ks data]} owner]
+  [{:keys [svg rect-type rect x-axis y-axis retriever-ks data]} owner]
   (display-name [_] (str rect-type "-bar-chart"))
   (render [_]
           (let [{:keys [width height]} svg
-                {:keys [padding fill stroke]} rects-opts
+                {:keys [padding fill stroke]} rect
                 {:keys [ord-ks num-ks]} retriever-ks
                 margin {:left  40
                         :right 40
@@ -101,8 +106,7 @@
                                                            max-data
                                                            ord-data
                                                            padding
-                                                           (:width container)
-                                                           (:height container))]
+                                                           container)]
             [:svg {:width width
                    :height height}
              (om/build rects
@@ -115,14 +119,17 @@
                         :rect-type rect-type
                         :data new-data}
                        {:react-key "rects"})
-             (let [{:keys [orient line-axis end-text each]} x-axis]
+             (let [{:keys [orient line-axis end-text each ticks]} x-axis]
                (om/build ax/axis
                          {:outer-container {:size svg
                                             :margin margin}
                           :each each
                           :orient orient
-                          :scale {:scale-type "ordinal"
-                                  :scale-fn x-scale}
+                          :scale {:scale-type (if (= rect-type "horizontal")
+                                                "numerical"
+                                                "ordinal")
+                                  :scale-fn x-scale
+                                  :scale-ticks ticks}
                           :end-text end-text
                           :line-axis line-axis
                           :data (if (= rect-type "horizontal")
@@ -137,7 +144,9 @@
                                             :margin margin}
                           :each each
                           :orient orient
-                          :scale {:scale-type "numerical"
+                          :scale {:scale-type (if (= rect-type "horizontal")
+                                                "ordinal"
+                                                "numerical")
                                   :scale-fn y-scale
                                   :scale-ticks ticks}
                           :end-text end-text
