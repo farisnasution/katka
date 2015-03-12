@@ -49,10 +49,17 @@
                                                 constructor
                                                 data))]))
 
-(defn construct-path-opts
+(defn construct-path-opts-area
   [path-opts]
   (into {:fill "steelblue"}
         path-opts))
+
+(defn construct-scale
+  [x-min x-max y-min y-max {:keys [width height]}]
+  {:x-scale (lsc/linear-scale {:domain [x-min x-max]
+                               :range-scale [0 width]})
+   :y-scale (lsc/linear-scale {:domain [y-min y-max]
+                               :range-scale [height 0]})})
 
 (defcomponent area-chart
   [{:keys [svg area x-axis y-axis retriever-ks data]} owner]
@@ -75,13 +82,14 @@
                                       (apply concat y-num-data))
                 y-min-data (math/min-value concated-y-num-data)
                 y-max-data (math/max-value concated-y-num-data)
-                x-scale (lsc/linear-scale {:domain [x-min-data x-max-data]
-                                           :range-scale [0 width]})
-                y-scale (lsc/linear-scale {:domain [y-min-data y-max-data]
-                                           :range-scale [height 0]})
+                {:keys [x-scale y-scale]} (construct-scale x-min-data
+                                                           x-max-data
+                                                           y-min-data
+                                                           y-max-data
+                                                           container)
                 area-fn (area-constructor {:x #(x-scale (first %))
                                            :y0 (if (nil? y-min-ks)
-                                                 height
+                                                 (:height container)
                                                  #(y-scale (last %)))
                                            :y1 #(y-scale (second %))})]
             [:svg {:width width
@@ -90,17 +98,18 @@
                        {:g {:pos-x (:left margin)
                             :pos-y (:top margin)}
                         :constructor area-fn
-                        :path (construct-path-opts area)
+                        :path (construct-path-opts-area area)
                         :data new-data}
                        {:react-key "single-line-area"})
-             (let [{:keys [orient line-axis end-text each]} x-axis]
+             (let [{:keys [orient line-axis end-text each ticks]} x-axis]
                (om/build ax/axis
                          {:outer-container {:size svg
                                             :margin margin}
                           :each each
                           :orient orient
                           :scale {:scale-type "numerical"
-                                  :scale-fn x-scale}
+                                  :scale-fn x-scale
+                                  :scale-ticks ticks}
                           :end-text end-text
                           :line-axis line-axis
                           :data  {:min-data x-min-data
@@ -123,6 +132,12 @@
                                   :all-data concated-y-num-data}}
                          {:react-key "y-axis"}))])))
 
+(defn construct-path-opts-line
+  [path-opts]
+  (into {:stroke "black"
+         :fill "white"}
+        path-opts))
+
 (defcomponent line-chart
   [{:keys [svg area x-axis y-axis retriever-ks data]} owner]
   (display-name [_] "line-chart")
@@ -141,10 +156,11 @@
                 concated-y-num-data (apply concat y-num-data)
                 y-min-data (math/min-value concated-y-num-data)
                 y-max-data (math/max-value concated-y-num-data)
-                x-scale (lsc/linear-scale {:domain [x-min-data x-max-data]
-                                           :range-scale [0 width]})
-                y-scale (lsc/linear-scale {:domain [y-min-data y-max-data]
-                                           :range-scale [height 0]})
+                {:keys [x-scale y-scale]} (construct-scale x-min-data
+                                                           x-max-data
+                                                           y-min-data
+                                                           y-max-data
+                                                           container)
                 line-fn (line-constructor {:x #(x-scale (first %))
                                            :y #(y-scale (second %))})]
             [:svg {:width width
@@ -154,19 +170,20 @@
                                           {:g {:pos-x (:left margin)
                                                :pos-y (:top margin)}
                                            :constructor line-fn
-                                           :path (construct-path-opts area)
-                                           :data (map vec x-num-data ds)
+                                           :path (construct-path-opts-line area)
+                                           :data (map vector x-num-data ds)
                                            :react-key idx})
                                         y-num-data)
                            {:key :react-key})
-             (let [{:keys [orient line-axis end-text each]} x-axis]
+             (let [{:keys [orient line-axis end-text each ticks]} x-axis]
                (om/build ax/axis
                          {:outer-container {:size svg
                                             :margin margin}
                           :each each
                           :orient orient
                           :scale {:scale-type "numerical"
-                                  :scale-fn x-scale}
+                                  :scale-fn x-scale
+                                  :scale-ticks ticks}
                           :end-text end-text
                           :line-axis line-axis
                           :data  {:min-data x-min-data
