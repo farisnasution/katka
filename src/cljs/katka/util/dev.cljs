@@ -1,20 +1,23 @@
 (ns katka.util.dev)
 
 (defn alert
-  [m]
-  (.alert js/window m))
+  [m & [as-cljs]]
+  (.alert js/window (if (true? as-cljs)
+                      m
+                      (clj->js m))))
 
 (defn log
-  [m]
-  (.log js/console m))
+  [m & [as-cljs]]
+  (.log js/console (if (true? as-cljs)
+                     m
+                     (clj->js m))))
 
 (defn p
   ([data message]
    (when-not (or (nil? message)
                  (= "" message))
      (log (str "Message: " message)))
-   (log data)
-   data
+   (log (clj->js data))
    data)
   ([data]
    (p data "")))
