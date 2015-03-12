@@ -10,8 +10,9 @@
 
 (defn format-data
   [data & ks]
-  (let [fns (map (fn [k]
-                   #(get-in % k)) ks)
+  (let [fns (->> ks
+                 (filter #(not (nil? %)))
+                 (map (fn [k] #(get-in % k))))
         f (apply juxt fns)]
     (map f data)))
 
