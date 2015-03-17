@@ -63,6 +63,24 @@
 
 (om/root la/line-chart line-state {:target (q/get-el-by-id "line-chart")})
 
+(defonce multi-line-data (map (fn [r]
+                                {:x r
+                                 :y0 (+ r (rand-int 100))
+                                 :y1 (+ r (rand-int 75))
+                                 :y2 (+ r (rand-int 50))})
+                              (range 50)))
+
+(def multi-line-state (atom {:data multi-line-data
+                             :svg {:width 960
+                                   :height 500}
+                             :x-axis {:ticks 10
+                                      :orient "bottom"}
+                             :y-axis {:ticks 100}
+                             :retriever-ks {:x-ks [:x]
+                                            :y-ks [[:y0] [:y1] [:y2]]}}))
+
+(om/root la/line-chart multi-line-state {:target (q/get-el-by-id "multi-line-chart")})
+
 (def area-state (atom {:data numerical-data
                        :svg {:width 960
                              :height 500}
