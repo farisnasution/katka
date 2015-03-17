@@ -85,20 +85,18 @@
 
 (defn construct-acceptable-value
   [data]
-  {:children (apply array data)})
+  (js-obj "children" (apply array data)))
 
 (defcomponent bubbles
-  [{:keys [diameter style text data]} owner]
+  [{:keys [g diameter style text data]} owner]
   (display-name [_] "bubbles")
   (render [_]
-          [:g {}
-           (let [{:keys [colors padding]} style
-                 ord-data (map first data)
-                 color-fn (if (nil? colors)
-                            (osc/ordinal-20c)
-                            (osc/ordinal-scale {:domain ord-data
-                                                :range-scale colors}))
-                 bubble-factory (bubble-layout {:sort-fn nil
+          [:g {:transform (data/translate g)}
+           (let [{:keys [colors padding sorting-type]} style
+                 color-fn (construct-color data colors)
+                 fill-creator (construct-fill color-fn)
+                 bubble-factory (bubble-layout {:sort-fn (construct-sorting
+                                                          sorting-type)
                                                 :size [diameter diameter]
                                                 :padding padding
                                                 :value second})
@@ -106,10 +104,10 @@
              (om/build-all bubble-element
                            (->> data
                                 construct-acceptable-value
-                                bubble-factory
+                                (.nodes bubble-factory)
                                 (map-indexed (fn [idx d]
                                                {:circle {:r (.-r d)
-                                                         :fill (color-fn (last d))}
+                                                         :fill (fill-creator idx d)}
                                                 :text (text-creator idx d)
                                                 :g {:pos-x (.-x d)
                                                     :pos-y (.-y d)}
@@ -121,15 +119,19 @@
   (display-name [_] "bubble-chart")
   (render [_]
           (let [{:keys [width height]} svg
-                {:keys [ord-ks num-ks color-ks children-ks]} retriever-ks
+                {:keys [ord-ks num-ks group-ks]} retriever-ks
                 margin {:left 40
                         :right 40
                         :top 30
                         :bottom 30}
                 container (data/inner-container width height margin)
-                new-data (data/format-data ord-ks num-ks color-ks)]
-            (om/build bubbles
-                      {:diameter (construct-diameter container)
-                       :style style
-                       :text text
-                       :data new-data}))))
+                new-data (data/format-data data ord-ks num-ks group-ks)]
+            [:svg {:width width
+                   :height height}
+             (om/build bubbles
+                       {:g {:pos-x (:left margin)
+                            :pos-y (:top margin)}
+                        :diameter (construct-diameter container)
+                        :style style
+                        :text text
+                        :data new-data})])))
