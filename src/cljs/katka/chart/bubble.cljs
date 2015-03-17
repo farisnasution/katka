@@ -35,10 +35,12 @@
 
 (defn construct-text
   [text-opts]
-  (into {:dy "0.3em"
-         :text-anchor "middle"
-         :show-text? true}
-        text-opts))
+  (fn [idx d]
+    (into {:dy "0.3em"
+           :text-anchor "middle"
+           :show-text? (not (zero? idx))
+           :content (when-not (zero? idx) (first d))}
+          text-opts)))
 
 (defn construct-diameter
   [{:keys [width height]}]
@@ -62,9 +64,8 @@
                  bubble-factory (bubble-layout {:sort-fn nil
                                                 :size [diameter diameter]
                                                 :padding padding
-                                                :value #(second %)
-                                                :children #(:children %)})
-                 text-opts (construct-text text)]
+                                                :value second})
+                 text-creator (construct-text text)]
              (om/build-all bubble-element
                            (->> data
                                 construct-acceptable-value
@@ -72,9 +73,7 @@
                                 (map-indexed (fn [idx d]
                                                {:circle {:r (.-r d)
                                                          :fill (color-fn (last d))}
-                                                :text (assoc text-opts
-                                                             :content
-                                                             (first d))
+                                                :text (text-creator idx d)
                                                 :g {:pos-x (.-x d)
                                                     :pos-y (.-y d)}
                                                 :react-key idx})))
