@@ -72,19 +72,21 @@
 
 (defn construct-text
   [text-opts orient]
-  (merge {:show-text? true}
-         (condp = orient
-           "top" {:dy "-1.4em"
-                  :text-anchor "middle"}
-           "bottom" {:dy "1.4em"
-                     :text-anchor "middle"}
-           "left" {:dx "-1.4em"
-                   :text-anchor "end"}
-           "right" {:dx "1.4em"
-                    :text-anchor "start"}
-           {:dx "-1.4em"
-            :text-anchor "end"})
-         text-opts))
+  (fn [d]
+    (merge {:show-text? true
+            :content d}
+           (condp = orient
+             "top" {:dy "-1.4em"
+                    :text-anchor "middle"}
+             "bottom" {:dy "1.4em"
+                       :text-anchor "middle"}
+             "left" {:dx "-1.4em"
+                     :text-anchor "end"}
+             "right" {:dx "1.4em"
+                      :text-anchor "start"}
+             {:dx "-1.4em"
+              :text-anchor "end"})
+           text-opts)))
 
 (defn get-axis-data
   [scale-type scale-ticks {:keys [min-data max-data all-data]}]
@@ -153,7 +155,7 @@
           [:g {:transform (data/translate (construct-outer-g outer-container
                                                              orient))}
            (let [{:keys [scale-type scale-fn scale-ticks]} scale
-                 text-opts (construct-text (:text each) orient)
+                 text-creator (construct-text (:text each) orient)
                  line-opts (construct-line (:line each) orient)
                  g-creator (construct-g scale-type scale-fn orient)]
              (om/build-all axis-element
@@ -161,7 +163,7 @@
                                 (get-axis-data scale-type scale-ticks)
                                 (map-indexed (fn [idx d]
                                                {:line line-opts
-                                                :text (assoc text-opts :content d)
+                                                :text (text-creator d)
                                                 :g (g-creator d)
                                                 :react-key idx})))
                            {:key :react-key}))
