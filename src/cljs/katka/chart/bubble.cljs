@@ -46,6 +46,12 @@
   [{:keys [width height]}]
   (min width height))
 
+(defn construct-fill
+  [color-fn]
+  (fn [idx d]
+    (if (zero? idx)
+      "white"
+      (color-fn (last d)))))
 (defn construct-acceptable-value
   [data]
   {:children (apply array data)})
