@@ -6,6 +6,10 @@
             [katka.util.data :as data])
   (:use-macros [katka.macro :only [defcomponent not-nil?]]))
 
+(defn -invoke-sort
+  [scale value]
+  (.sort scale (if (false? value) nil value)))
+
 (defn -invoke-size
   [scale value]
   (.size scale (apply array value)))
@@ -14,7 +18,7 @@
   [{:keys [value sort-fn size radius padding children]}]
   (cond-> (.pack (.-layout js/d3))
           (not-nil? value) (.value value)
-          (not-nil? sort-fn) (.sort sort-fn)
+          (not-nil? sort-fn) (-invoke-sort sort-fn)
           (not-nil? size) (-invoke-size size)
           (not-nil? radius) (.radius radius)
           (not-nil? padding) (.padding padding)
