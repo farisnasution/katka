@@ -46,6 +46,23 @@
   [{:keys [width height]}]
   (min width height))
 
+(defn construct-sorting
+  [sorting-type]
+  (condp = sorting-type
+    :none false
+    :ascending-name (fn [a b]
+                      (compare (first a) (first b)))
+    :descending-name (fn [a b]
+                       (compare (first b) (first a)))
+    :ascending-value (fn [a b]
+                       (compare (second a) (second b)))
+    :descending-value (fn [a b]
+                        (compare (second b) (second a)))
+    :ascending-group (fn [a b]
+                       (compare (last a) (last b)))
+    :descending-group (fn [a b]
+                        (compare (last b) (last a)))
+    false))
 (defn construct-fill
   [color-fn]
   (fn [idx d]
