@@ -10,7 +10,8 @@
 
 (defonce ordinal-data (map (fn [r]
                              {:name r
-                              :age (* r r)}) (range 40)))
+                              :age (+ r (rand-int 100))})
+                           (range 50)))
 
 (def vertical-bar-state (atom {:data ordinal-data
                                :svg {:width 960
@@ -46,7 +47,8 @@
 
 (defonce numerical-data (map (fn [r]
                                {:x r
-                                :y (* r r)}) (range 20)))
+                                :y (+ r (rand-int 100))})
+                             (range 50)))
 
 (def line-state (atom {:data numerical-data
                        :svg {:width 960
@@ -71,6 +73,24 @@
 
 (om/root la/area-chart area-state {:target (q/get-el-by-id "area-chart")})
 
+(defonce bivariate-area-data (map (fn [r]
+                                    {:x r
+                                     :y1 (+ r (rand-int 100))
+                                     :y0 (- r (rand-int 100))})
+                                  (range 50)))
+
+(def bivariate-area-state (atom {:data bivariate-area-data
+                                 :svg {:width 960
+                                       :height 500}
+                                 :area {:fill "steelblue"}
+                                 :x-axis {:ticks 5
+                                          :orient "bottom"}
+                                 :y-axis {:ticks 100}
+                                 :retriever-ks {:x-ks [:x]
+                                                :y-ks [[:y1] [:y0]]}}))
+
+(om/root la/area-chart bivariate-area-state {:target (q/get-el-by-id "bivariate-area-chart")})
+
 (def pie-state (atom {:data ordinal-data
                       :svg {:width 960
                             :height 500}
@@ -89,43 +109,27 @@
 
 (om/root dp/donut-pie-chart donut-state {:target (q/get-el-by-id "donut-chart")})
 
-(defonce bubble-data [{:name "faris"
-                       :age 20
-                       :group "genius"}
-                      {:name "mirhady"
-                       :age 21
-                       :group "genius"}
-                      {:name "herdito"
-                       :age 22
-                       :group "smart"}
-                      {:name "farras"
-                       :age 25
-                       :group "genius"}
-                      {:name "adiva"
-                       :age 10
-                       :group "duh"}
-                      {:name "kewer"
-                       :age 50
-                       :group "smart"}
-                      {:name "ario"
-                       :age 20
-                       :group "duh"}
-                      {:name "bima"
-                       :age 75
-                       :group "duh"}
-                      {:name "ican"
-                       :age 20
-                       :group "smart"}
-                      {:name "odi"
-                       :age 15
-                       :group "genius"}])
+(defonce bubble-data (map (fn [r]
+                            {:name r
+                             :age (+ r (rand-int 100))
+                             :group (rand-nth
+                                     ["smart"
+                                      "genius"
+                                      "normal"
+                                      "duh"
+                                      "extraordinary"
+                                      "dumb"
+                                      "stupid"
+                                      "idiot"
+                                      "faggot"])})
+                          (range 50)))
 
 (def bubble-state (atom {:data bubble-data
                          :svg {:width 960
                                :height 500}
                          :style {:padding 1.5
                                  :sorting-type :ascending-group
-                                 :colors ["red" "black" "green" "yellow"]}
+                                 :colors :c10}
                          :retriever-ks {:ord-ks [:name]
                                         :num-ks [:age]
                                         :group-ks [:group]}}))
