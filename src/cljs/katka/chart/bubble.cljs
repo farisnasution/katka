@@ -63,12 +63,26 @@
     :descending-group (fn [a b]
                         (compare (last b) (last a)))
     false))
+
+(defn construct-color
+  [data colors]
+  (cond
+   (coll? colors) (osc/ordinal-scale {:domain (map first data)
+                                      :range-scale colors})
+   (keyword? colors) (condp = colors
+                       :c10 (osc/ordinal-10)
+                       :c20 (osc/ordinal-20)
+                       :c20b (osc/ordinal-20b)
+                       :c20c (osc/ordinal-20c))
+   :else (osc/ordinal-10)))
+
 (defn construct-fill
   [color-fn]
   (fn [idx d]
     (if (zero? idx)
       "white"
       (color-fn (last d)))))
+
 (defn construct-acceptable-value
   [data]
   {:children (apply array data)})
