@@ -89,12 +89,46 @@
 
 (om/root dp/donut-pie-chart donut-state {:target (q/get-el-by-id "donut-chart")})
 
-(def bubble-state (atom {:data ordinal-data
+(defonce bubble-data [{:name "faris"
+                       :age 20
+                       :group "genius"}
+                      {:name "mirhady"
+                       :age 21
+                       :group "genius"}
+                      {:name "herdito"
+                       :age 22
+                       :group "smart"}
+                      {:name "farras"
+                       :age 25
+                       :group "genius"}
+                      {:name "adiva"
+                       :age 10
+                       :group "duh"}
+                      {:name "kewer"
+                       :age 50
+                       :group "smart"}
+                      {:name "ario"
+                       :age 20
+                       :group "duh"}
+                      {:name "bima"
+                       :age 75
+                       :group "duh"}
+                      {:name "ican"
+                       :age 20
+                       :group "smart"}
+                      {:name "odi"
+                       :age 15
+                       :group "genius"}])
+
+(def bubble-state (atom {:data bubble-data
                          :svg {:width 960
                                :height 500}
-                         :style {:padding 1.5}
+                         :style {:padding 1.5
+                                 :sorting-type :ascending-group
+                                 :colors ["red" "black" "green" "yellow"]}
                          :retriever-ks {:ord-ks [:name]
-                                        :num-ks [:age]}}))
+                                        :num-ks [:age]
+                                        :group-ks [:group]}}))
 
 (om/root cb/bubble-chart bubble-state {:target (q/get-el-by-id "bubble-chart")})
 
