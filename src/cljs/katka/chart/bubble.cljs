@@ -36,7 +36,8 @@
 (defn construct-text
   [text-opts]
   (into {:dy "0.3em"
-         :text-anchor "middle"}
+         :text-anchor "middle"
+         :show-text? true}
         text-opts))
 
 (defn construct-diameter
