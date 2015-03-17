@@ -41,10 +41,8 @@
         text-opts))
 
 (defn construct-diameter
-  [container]
-  (let [width (:width container)
-        height (:height container)]
-    (min width height)))
+  [{:keys [width height]}]
+  (min width height))
 
 (defn construct-acceptable-value
   [data]
