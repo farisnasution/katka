@@ -133,7 +133,7 @@
 (defn construct-path-opts-line
   [path-opts]
   (into {:stroke "black"
-         :fill "white"}
+         :fill "none"}
         path-opts))
 
 (defcomponent line-chart
