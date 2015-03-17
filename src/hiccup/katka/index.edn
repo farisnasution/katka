@@ -10,9 +10,11 @@
   [:div {:id "vertical-bar-chart"}]
   [:div {:id "horizontal-bar-chart"}]
   [:div {:id "line-chart"}]
+  [:div {:id "multi-line-chart"}]
   [:div {:id "pie-chart"}]
   [:div {:id "donut-chart"}]
   [:div {:id "area-chart"}]
+  [:div {:id "bivariate-area-chart"}]
   [:div {:id "bubble-chart"}]
   [:div {:id "waterfall-chart"}]
   [:script {:src "js/out/goog/base.js"
