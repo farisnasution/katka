@@ -77,9 +77,7 @@
                 [x-num-data & y-num-data] (data/separate-data new-data)
                 x-min-data (math/min-value x-num-data)
                 x-max-data (math/max-value x-num-data)
-                concated-y-num-data (if (nil? y-ks)
-                                      (first y-num-data)
-                                      (apply concat y-num-data))
+                concated-y-num-data (apply concat y-num-data)
                 y-min-data (math/min-value concated-y-num-data)
                 y-max-data (math/max-value concated-y-num-data)
                 {:keys [x-scale y-scale]} (construct-scale x-min-data
