@@ -43,7 +43,9 @@
                                  :y-axis {:orient "left"
                                           :end-text {:content "faris"}}}))
 
-(om/root b/bar-chart horizontal-bar-state {:target (q/get-el-by-id "horizontal-bar-chart")})
+(om/root b/bar-chart
+         horizontal-bar-state
+         {:target (q/get-el-by-id "horizontal-bar-chart")})
 
 (defonce numerical-data (map (fn [r]
                                {:x r
@@ -89,7 +91,9 @@
                                  :retriever-ks {:x-ks [:x]
                                                 :y-ks [[:y1] [:y0]]}}))
 
-(om/root la/area-chart bivariate-area-state {:target (q/get-el-by-id "bivariate-area-chart")})
+(om/root la/area-chart
+         bivariate-area-state
+         {:target (q/get-el-by-id "bivariate-area-chart")})
 
 (def pie-state (atom {:data ordinal-data
                       :svg {:width 960
@@ -119,10 +123,11 @@
                                       "duh"
                                       "extraordinary"
                                       "dumb"
+                                      "dumber"
                                       "stupid"
                                       "idiot"
                                       "faggot"])})
-                          (range 50)))
+                          (range 100)))
 
 (def bubble-state (atom {:data bubble-data
                          :svg {:width 960
