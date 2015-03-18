@@ -107,7 +107,8 @@
                                 (.nodes bubble-factory)
                                 (map-indexed (fn [idx d]
                                                {:circle {:r (.-r d)
-                                                         :fill (fill-creator idx d)}
+                                                         :fill (fill-creator idx
+                                                                             d)}
                                                 :text (text-creator idx d)
                                                 :g {:pos-x (.-x d)
                                                     :pos-y (.-y d)}

@@ -86,7 +86,8 @@
                            (->> (apply array data)
                                 donut-pie-factory
                                 (map-indexed (fn [idx data]
-                                               (let [ord-d (get-ordinal-data data)]
+                                               (let [ord-d (get-ordinal-data
+                                                            data)]
                                                  {:path (path-constructor ord-d
                                                                           data)
                                                   :text (text-constructor ord-d
