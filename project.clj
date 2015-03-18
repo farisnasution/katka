@@ -4,12 +4,12 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-3058"]
-                 [figwheel "0.2.2-SNAPSHOT"]
+                 [org.clojure/clojurescript "0.0-3123"]
+                 [figwheel "0.2.5"]
                  [hiccup "1.0.5"]
                  [org.omcljs/om "0.8.8"]
                  [sablono "0.3.4"]
-                 [secretary "1.2.1"]]
+                 [secretary "1.2.2"]]
   :plugins [[lein-cljsbuild "1.0.4"]
             [lein-figwheel "0.2.2-SNAPSHOT"]
             [hiccup-watch "0.1.1"]
