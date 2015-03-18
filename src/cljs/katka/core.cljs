@@ -27,7 +27,9 @@
                                         :end-text {:content "faris"}
                                         :ticks 100}}))
 
-(om/root b/bar-chart vertical-bar-state {:target (q/get-el-by-id "vertical-bar-chart")})
+(om/root b/bar-chart
+         vertical-bar-state
+         {:target (q/get-el-by-id "vertical-bar-chart")})
 
 (def horizontal-bar-state (atom {:data ordinal-data
                                  :svg {:width 960
@@ -79,7 +81,9 @@
                              :retriever-ks {:x-ks [:x]
                                             :y-ks [[:y0] [:y1] [:y2]]}}))
 
-(om/root la/line-chart multi-line-state {:target (q/get-el-by-id "multi-line-chart")})
+(om/root la/line-chart
+         multi-line-state
+         {:target (q/get-el-by-id "multi-line-chart")})
 
 (def area-state (atom {:data numerical-data
                        :svg {:width 960
@@ -129,7 +133,9 @@
                         :retriever-ks {:ord-ks [:name]
                                        :num-ks [:age]}}))
 
-(om/root dp/donut-pie-chart donut-state {:target (q/get-el-by-id "donut-chart")})
+(om/root dp/donut-pie-chart
+         donut-state
+         {:target (q/get-el-by-id "donut-chart")})
 
 (defonce bubble-data (map (fn [r]
                             {:name r
@@ -158,68 +164,3 @@
                                         :group-ks [:group]}}))
 
 (om/root cb/bubble-chart bubble-state {:target (q/get-el-by-id "bubble-chart")})
-
-;; ;; ===================================================================
-
-;; ini buat pr keamanan informasi
-
-;; (defn write-file
-;;   [file-name content]
-;;   (loop [x (reduce (fn [p n]
-;;                      (str p n "\n")) "" content)]
-;;     (spit file-name x)))
-
-;; (defn allmx
-;;   [file-name]
-;;   (->> (split (slurp file-name) #"\n")
-;;        (map (fn [x]
-;;               (split x #"\s")))
-;;        (map #(last %))
-;;        (set)))
-
-;; (def allmxdetik
-;;   (allmx "allmxdetik.txt"))
-
-;; (write-file "processed/allmxdetik.txt" (reduce (fn [p n]
-;;                                                  (str p n "\n")) "" allmxdetik))
-
-;; (def allmxitb
-;;   (allmx "allmxitb.txt"))
-
-;; (def allnsdetik
-;;   (allmx "allnsdetik.txt"))
-
-;; (def allnsitb
-;;   (allmx "allnsitb.txt"))
-
-;; (defn fourthlevelsubdomain
-;;   [file-name]
-;;   (->> (split (slurp file-name) #"\n")
-;;        (map #(split % #"\s"))
-;;        (map #(first %))
-;;        (filter (fn [x]
-;;                  (let [splitted (split x #"\.")
-;;                        result (count splitted)]
-;;                    (= result 4))))
-;;        (set)))
-
-;; (def allsubdomainitb
-;;   (fourthlevelsubdomain "allsubdomainitb.txt"))
-
-;; (def q (cb/bubble-layout {:sort-fn nil
-;;                           :size [960 960]
-;;                           :padding 1.5
-;;                           :value #(first %)
-;;                           :children #(:children %)}))
-
-;; (def w (js-obj "children" (array (js-obj "value" 20)
-;;                                  (js-obj "value" 30))))
-
-;; (def e {:children (apply array [[50]
-;;                                 [20]
-;;                                 [30]
-;;                                 [1]])})
-
-;; (def r (js-obj "children" (apply array e)))
-
-;; (dev/log (.nodes q e))
