@@ -5,6 +5,7 @@
             [katka.chart.axis :as ax]
             [katka.util.data :as data]
             [katka.util.math :as math]
+            [katka.scale.ordinal :as osc]
             [katka.scale.linear :as lsc])
   (:use-macros [katka.macro :only [defcomponent not-nil?]]))
 
@@ -131,10 +132,15 @@
                          {:react-key "y-axis"}))])))
 
 (defn construct-path-opts-line
-  [path-opts]
-  (into {:stroke "black"
-         :fill "none"}
-        path-opts))
+  [path-opts y-ks]
+  (let [color-fn (osc/ordinal-10)]
+    (fn [idx]
+      (into {:stroke (-> y-ks
+                         (get idx)
+                         last
+                         color-fn)
+             :fill "none"}
+            path-opts))))
 
 (defcomponent line-chart
   [{:keys [svg area x-axis y-axis retriever-ks data]} owner]
@@ -160,7 +166,8 @@
                                                            y-max-data
                                                            container)
                 line-fn (line-constructor {:x #(x-scale (first %))
-                                           :y #(y-scale (second %))})]
+                                           :y #(y-scale (second %))})
+                path-constructor (construct-path-opts-line area y-ks)]
             [:svg {:width width
                    :height height}
              (om/build-all single-line-area
@@ -168,7 +175,7 @@
                                           {:g {:pos-x (:left margin)
                                                :pos-y (:top margin)}
                                            :constructor line-fn
-                                           :path (construct-path-opts-line area)
+                                           :path (path-constructor idx)
                                            :data (map vector x-num-data ds)
                                            :react-key idx})
                                         y-num-data)
